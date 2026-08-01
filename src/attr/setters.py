@@ -31,6 +31,12 @@ def pipe(*setters):
             )
             raise TypeError(msg)
 
+    return _pipe(*setters)
+
+
+def _pipe(*setters):
+    """Build a pipe without checking its setters for generators."""
+
     def wrapped_pipe(instance, attrib, new_value):
         rv = new_value
 

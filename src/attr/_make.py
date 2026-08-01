@@ -48,7 +48,7 @@ _EMPTY_METADATA_SINGLETON = types.MappingProxyType({})
 # Unique object for unequivocal getattr() defaults.
 _SENTINEL = object()
 
-_DEFAULT_ON_SETATTR = setters.pipe(setters.convert, setters.validate)
+_DEFAULT_ON_SETATTR = setters._pipe(setters.convert, setters.validate)
 
 
 class _Nothing(enum.Enum):
