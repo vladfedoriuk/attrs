@@ -28,7 +28,6 @@ from ._make import (
     validate,
 )
 from ._next_gen import define, field, frozen, mutable
-from ._version_info import VersionInfo
 
 
 s = attributes = attrs
@@ -90,6 +89,12 @@ def _make_getattr(mod_name: str) -> Callable:
     """
 
     def __getattr__(name: str) -> str:
+        if name == "VersionInfo":
+            from ._version_info import VersionInfo
+
+            globals()[name] = VersionInfo
+            return VersionInfo
+
         if name in _LAZY_SUBMODULES:
             import importlib
 
@@ -106,6 +111,8 @@ def _make_getattr(mod_name: str) -> Callable:
         meta = metadata("attrs")
 
         if name == "__version_info__":
+            from ._version_info import VersionInfo
+
             return VersionInfo._from_version_string(meta["version"])
 
         return meta["version"]
