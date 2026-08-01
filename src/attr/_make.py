@@ -2,18 +2,11 @@
 
 from __future__ import annotations
 
-import abc
-import contextlib
 import enum
-import itertools
-import linecache
 import sys
 import types
-import unicodedata
-import weakref
 
 from collections.abc import Callable, Mapping
-from functools import cached_property
 from typing import Any, NamedTuple, TypeVar
 
 # We need to import _compat itself in addition to the _compat members to avoid
@@ -238,6 +231,7 @@ def _linecache_and_compile(
     """
     Cache the script with _linecache_, compile it and return the _locals_.
     """
+    import linecache
 
     locs = {} if locals is None else locals
 
@@ -804,6 +798,9 @@ class _ClassBuilder:
 
         Builder cannot be used after calling this method.
         """
+        import abc
+        import weakref
+
         self._eval_snippets()
         if self._slots is True:
             cls = self._create_slots_class()
@@ -827,6 +824,8 @@ class _ClassBuilder:
         """
         Apply accumulated methods and return the class.
         """
+        import contextlib
+
         cls = self._cls
         base_names = self._base_names
 
@@ -863,6 +862,10 @@ class _ClassBuilder:
         """
         Build and return a new class with a `__slots__` attribute.
         """
+        import contextlib
+        import itertools
+        from functools import cached_property
+
         cd = {
             k: v
             for k, v in self._cls_dict.items()
@@ -1240,6 +1243,8 @@ class _ClassBuilder:
         """
         Add __module__ and __qualname__ to a *method* if possible.
         """
+        import contextlib
+
         with contextlib.suppress(AttributeError):
             method.__module__ = self._cls.__module__
 
@@ -3308,6 +3313,9 @@ def make_class(
     .. versionchanged:: 23.2.0 *class_body*
     .. versionchanged:: 25.2.0 Class names can now be unicode.
     """
+    import contextlib
+    import unicodedata
+
     # Class identifiers are converted into the normal form NFKC while parsing
     name = unicodedata.normalize("NFKC", name)
 
