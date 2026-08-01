@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 
 import sys
-import threading
 
 from collections.abc import Mapping, Sequence  # noqa: F401
 from typing import Callable, _GenericAlias
@@ -81,7 +80,8 @@ class _AnnotationExtractor:
         return None
 
 
-# Thread-local global to track attrs instances which are already being repr'd.
+# Lazy thread-local global to track attrs instances which are already being
+# repr'd.
 # This is needed because there is no other (thread-safe) way to pass info
 # about the instances that are already being repr'd through the call stack
 # in order to ensure we don't perform infinite recursion.
@@ -93,7 +93,31 @@ class _AnnotationExtractor:
 # This lives here rather than in _make.py so that the functions in _make.py
 # don't have a direct reference to the thread-local in their globals dict.
 # If they have such a reference, it breaks cloudpickle.
-repr_context = threading.local()
+class _ReprContext:
+    __slots__ = ("_local",)
+
+    def __init__(self):
+        self._local = None
+
+    def _get_local(self):
+        if self._local is None:
+            import threading
+
+            self._local = threading.local()
+
+        return self._local
+
+    def __getattr__(self, name):
+        return getattr(self._get_local(), name)
+
+    def __setattr__(self, name, value):
+        if name == "_local":
+            object.__setattr__(self, name, value)
+        else:
+            setattr(self._get_local(), name, value)
+
+
+repr_context = _ReprContext()
 
 
 def get_generic_base(cl):
